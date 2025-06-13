@@ -5,6 +5,6 @@ services:
     buildCommand: "pip install -r requirements.txt"
     startCommand: "python main.py"
 envVars:
-  - key: BOT_TOKEN
+  - key: 7277335379:AAGz9nULd4lcZ_egjNOvLplhnZWm4GAw4uA
     fromService: team-tasmina-bot
     # Set the actual token value in Render dashboard settings
