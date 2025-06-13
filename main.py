@@ -1,4 +1,3 @@
-import os
 import random
 from telegram import Update
 from telegram.ext import (
@@ -9,7 +8,7 @@ from telegram.ext import (
     filters,
 )
 
-BOT_TOKEN = "7277335379:AAGz9nULd4lcZ_egjNOvLplhnZWm4GAw4uA"
+BOT_TOKEN = "7277335379:AAGz9nULd4lcZ_egjNOvLplhnZWm4GAw4uA"  # 🛑 Keep private!
 
 promotion_responses = [
     "💔 Team Tasmina says: No promotions here... Respect the vibe, not the spam 😢",
@@ -27,21 +26,20 @@ join_welcome_responses = [
 ]
 
 async def approve_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    join_request = update.chat_join_request
-    await join_request.approve()
-    first_name = join_request.from_user.first_name or "friend"
-    welcome_message = random.choice(join_welcome_responses).format(first_name=first_name)
-    await context.bot.send_message(chat_id=join_request.chat.id, text=welcome_message)
+    user = update.chat_join_request.from_user
+    await update.chat_join_request.approve()
+    welcome = random.choice(join_welcome_responses).format(first_name=user.first_name or "Friend")
+    await context.bot.send_message(chat_id=update.chat_join_request.chat.id, text=welcome)
 
 async def block_links(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text or ""
-    if any(word in text.lower() for word in ["http", "https", "t.me", "@", ".com", "joinchat"]):
+    if any(bad in text.lower() for bad in ["http", "https", "t.me", "@", ".com", "joinchat"]):
         try:
             await update.message.delete()
         except Exception as e:
-            print(f"⚠️ Couldn't delete message: {e}")
-        warning = random.choice(promotion_responses)
-        await context.bot.send_message(chat_id=update.message.chat.id, text=warning)
+            print(f"Error deleting message: {e}")
+        warn = random.choice(promotion_responses)
+        await context.bot.send_message(chat_id=update.message.chat.id, text=warn)
 
 async def main():
     print("🤖 Team Tasmina Bot is starting...")
