@@ -1,10 +1,7 @@
 services:
-  - type: background
+  - type: web
     name: team-tasmina-bot
     env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "python main.py"
-envVars:
-  - key: 7277335379:AAGz9nULd4lcZ_egjNOvLplhnZWm4GAw4uA
-    fromService: team-tasmina-bot
-    # Set the actual token value in Render dashboard settings
+    plan: free
+    buildCommand: ""
+    startCommand: python main.py
