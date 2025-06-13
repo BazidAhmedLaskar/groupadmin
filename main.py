@@ -8,13 +8,17 @@ from telegram.ext import (
     MessageHandler,
     filters
 )
+from dotenv import load_dotenv
 
-# Retrieve bot token from environment
+# Load environment variables from .env file (for local testing)
+load_dotenv()
+
+# Securely fetch token
 BOT_TOKEN = os.getenv("7277335379:AAGz9nULd4lcZ_egjNOvLplhnZWm4GAw4uA")
 if not BOT_TOKEN:
     raise ValueError("Error: BOT_TOKEN environment variable not set.")
 
-# 🔥 Team Tasmina Emotional Warnings
+# 🚫 Promotion warning replies
 promotion_responses = [
     "💔 Team Tasmina says: No promotions here... Respect the vibe, not the spam 😢",
     "🛑 Bro, we trying to keep it clean! No links allowed – Team Tasmina is watching 👀",
@@ -23,7 +27,7 @@ promotion_responses = [
     "🤐 Chill! Don’t spam the chat. Team Tasmina wants a peaceful world 🌍"
 ]
 
-# 🎉 Emotional Welcome by Team Tasmina
+# ✨ Welcome responses
 join_welcome_responses = [
     "🎉 Welcome {first_name}! You're officially part of Team Tasmina now 💖 No promotions, just emotions!",
     "🌟 Hi {first_name}, welcome to the drama-free zone! Team Tasmina says behave 🤞",
@@ -31,38 +35,33 @@ join_welcome_responses = [
     "🔥 Yo {first_name}, you made it to the gang! Team Tasmina appreciates real ones 🫶"
 ]
 
-# 🔓 Auto-Approve Join Requests
+# 🔓 Auto-approve new join requests
 async def approve_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
     join_request = update.chat_join_request
     await join_request.approve()
     first_name = join_request.from_user.first_name or "friend"
     welcome_message = random.choice(join_welcome_responses).format(first_name=first_name)
     await context.bot.send_message(chat_id=join_request.chat.id, text=welcome_message)
-    print(f"✅ Approved {first_name} to Team Tasmina group.")
 
-# 🧹 Detect and Delete Promo Links
+# 🧹 Detect and remove promotions
 async def block_links(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text or ""
-    if any(token in text.lower() for token in ['http', 't.me', '@']):
+    if any(word in text.lower() for word in ["http", "https", "t.me", "@", ".com", "joinchat"]):
         try:
             await update.message.delete()
         except Exception as e:
             print(f"⚠️ Couldn't delete message: {e}")
         warning = random.choice(promotion_responses)
         await context.bot.send_message(chat_id=update.message.chat.id, text=warning)
-        print("❌ Deleted promotional message and sent warning.")
 
-# 🧠 Main Bot Logic
+# 🧠 Main logic
 async def main():
+    print("🚀 Starting Team Tasmina bot...")
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-    # Auto-approve join requests
     app.add_handler(ChatJoinRequestHandler(approve_request))
-
-    # Delete promotional messages and reply
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, block_links))
 
-    print("🤖 Team Tasmina Bot is now running...")
     await app.run_polling()
 
 if __name__ == "__main__":
