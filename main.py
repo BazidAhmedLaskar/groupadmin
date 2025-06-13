@@ -1,3 +1,4 @@
+import os
 import random
 from telegram import Update
 from telegram.ext import (
@@ -8,7 +9,10 @@ from telegram.ext import (
     filters
 )
 
-BOT_TOKEN = "7277335379:AAGz9nULd4lcZ_egjNOvLplhnZWm4GAw4uA"  # Replace with your bot token
+# Retrieve bot token from environment
+BOT_TOKEN = os.getenv("7277335379:AAGz9nULd4lcZ_egjNOvLplhnZWm4GAw4uA")
+if not BOT_TOKEN:
+    raise ValueError("Error: BOT_TOKEN environment variable not set.")
 
 # 🔥 Team Tasmina Emotional Warnings
 promotion_responses = [
@@ -38,26 +42,29 @@ async def approve_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # 🧹 Detect and Delete Promo Links
 async def block_links(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.message and update.message.text:
-        text = update.message.text.lower()
-        if any(link in text for link in ['http', 't.me', '@']):
-            try:
-                await update.message.delete()
-            except Exception as e:
-                print("⚠️ Couldn't delete message:", e)
-            warning = random.choice(promotion_responses)
-            await context.bot.send_message(chat_id=update.message.chat.id, text=warning)
-            print("❌ Deleted promo and warned user - Team Tasmina style.")
+    text = update.message.text or ""
+    if any(token in text.lower() for token in ['http', 't.me', '@']):
+        try:
+            await update.message.delete()
+        except Exception as e:
+            print(f"⚠️ Couldn't delete message: {e}")
+        warning = random.choice(promotion_responses)
+        await context.bot.send_message(chat_id=update.message.chat.id, text=warning)
+        print("❌ Deleted promotional message and sent warning.")
 
 # 🧠 Main Bot Logic
-def main():
+async def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
+    # Auto-approve join requests
     app.add_handler(ChatJoinRequestHandler(approve_request))
+
+    # Delete promotional messages and reply
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, block_links))
 
     print("🤖 Team Tasmina Bot is now running...")
-    app.run_polling()
+    await app.run_polling()
 
 if __name__ == "__main__":
-    main()
+    import asyncio
+    asyncio.run(main())
